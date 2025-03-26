@@ -10,5 +10,5 @@ class CatImageModel(Base):
 
     id: Mapped[intpk]
     cat_id: Mapped[Annotated[int, mapped_column(ForeignKey("cats.id"))]]
-    image_url: Mapped[Optional[str]]
+    image_url: Mapped[str]
     cat: Mapped["CatModel"] = relationship(back_populates="images")

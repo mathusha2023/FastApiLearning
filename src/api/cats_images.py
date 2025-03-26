@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, HTTPException, Path
 from typing import Annotated, Optional
+import uuid
 from sqlalchemy import select
 from src.api.dependencies import SessionDepend
 from src.api.responsies import PNGResponse, response404
@@ -33,14 +34,12 @@ async def post_image(cat_id: Annotated[int, Path(ge=1)], file: UploadFile, sessi
     cat: Optional[CatModel] = res.scalar()
     if cat is None:
         raise HTTPException(status_code=404, detail=f"Кот с {cat_id=} не найден!")
-    cat_image: CatImageModel = CatImageModel(cat_id=cat_id)
-    session.add(cat_image)
-    await session.flush([cat_image])
 
-    filename = f"{cat_id}-{cat_image.id}.png"
-    await S3Service.upload_file_object(content=file.file, object_name=filename)
+    filename = f"{uuid.uuid4()}.png"
     url = f"http://localhost:8000/api/cats_images/{filename}"
-
-    cat_image.image_url = url
+    cat_image: CatImageModel = CatImageModel(cat_id=cat_id, image_url=url)
+    session.add(cat_image)
     await session.commit()
+    await S3Service.upload_file_object(content=file.file, object_name=filename)
+
     return CatImageURLScheme(image_url=url)
