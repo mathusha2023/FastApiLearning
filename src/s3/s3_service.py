@@ -43,7 +43,6 @@ class S3Service:
         cls.config = None
         cls.session = None
 
-
     @classmethod
     @asynccontextmanager
     async def get_client(cls):

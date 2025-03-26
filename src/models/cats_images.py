@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.database.data_types import intpk
@@ -10,5 +10,5 @@ class CatImageModel(Base):
 
     id: Mapped[intpk]
     cat_id: Mapped[Annotated[int, mapped_column(ForeignKey("cats.id"))]]
-    image_url: Mapped[str]
+    image_url: Mapped[Optional[str]]
     cat: Mapped["CatModel"] = relationship(back_populates="images")
