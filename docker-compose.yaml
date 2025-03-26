@@ -2,6 +2,23 @@ name: "FastAPI"
 
 services:
 
+  minio:
+    image: minio/minio
+    entrypoint: sh
+    command: >
+      -c 'mkdir -p /data/bucket
+      && minio server /data'
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    expose:
+      - 9000
+    environment:
+      MINIO_ROOT_USER: user
+      MINIO_ROOT_PASSWORD: 123456789
+      MINIO_ADDRESS: ":9000"
+      MINIO_CONSOLE_ADDRESS: ":9001"
+
   database:
     container_name: database
     image: postgres
