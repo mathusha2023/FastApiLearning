@@ -3,6 +3,7 @@ name: "FastAPI"
 services:
 
   minio:
+    container_name: minio
     image: minio/minio
     entrypoint: sh
     command: >

@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.database.db_session import AsyncPostgresClient
 from src.api import main_router
 from src.s3.s3_service import S3Service
+from src.settings import settings
 
 
 class App(FastAPI):
@@ -21,8 +22,9 @@ class App(FastAPI):
     @staticmethod
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
-        await AsyncPostgresClient.init_postgres("postgresql+asyncpg://user:user@localhost/db")
-        await S3Service.init_s3(bucket_name="bucket", endpoint_url="http://localhost:9000", access_key="user", secret_key="123456789")
+        await AsyncPostgresClient.init_postgres(settings.postgres_url)
+        await S3Service.init_s3(bucket_name=settings.s3_bucket, endpoint_url=settings.s3_url,
+                                access_key=settings.s3_access_key, secret_key=settings.s3_secret_key)
         print("All resources have been successfully initialized")
 
         yield

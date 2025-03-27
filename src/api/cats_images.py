@@ -7,6 +7,7 @@ from src.api.responsies import PNGResponse, response404
 from src.models import CatModel, CatImageModel
 from src.s3.s3_service import S3Service
 from src.schemes import CatImageURLScheme, SuccessScheme
+from src.settings import settings
 
 router = APIRouter(tags=["Cats Images"], prefix="/cats_images")
 
@@ -36,7 +37,7 @@ async def post_image(cat_id: Annotated[int, Path(ge=1)], file: UploadFile, sessi
         raise HTTPException(status_code=404, detail=f"Кот с {cat_id=} не найден!")
 
     filename = f"{uuid.uuid4()}.png"
-    url = f"http://localhost:8000/api/cats_images/{filename}"
+    url = f"http://{settings.host}:{settings.port}/api/cats_images/{filename}"
     cat_image: CatImageModel = CatImageModel(cat_id=cat_id, image_url=url)
     session.add(cat_image)
     await session.commit()
