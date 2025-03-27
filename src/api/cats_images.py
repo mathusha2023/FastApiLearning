@@ -1,12 +1,12 @@
 from fastapi import APIRouter, UploadFile, HTTPException, Path
 from typing import Annotated, Optional
 import uuid
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from src.api.dependencies import SessionDepend
 from src.api.responsies import PNGResponse, response404
 from src.models import CatModel, CatImageModel
 from src.s3.s3_service import S3Service
-from src.schemes import CatImageURLScheme
+from src.schemes import CatImageURLScheme, SuccessScheme
 
 router = APIRouter(tags=["Cats Images"], prefix="/cats_images")
 
@@ -43,3 +43,12 @@ async def post_image(cat_id: Annotated[int, Path(ge=1)], file: UploadFile, sessi
     await S3Service.upload_file_object(content=file.file, object_name=filename)
 
     return CatImageURLScheme(image_url=url)
+
+
+@router.delete("/{image_id}", summary="Удалить изображение")
+async def delete_image(image_id: Annotated[int, Path(ge=1)], session: SessionDepend) -> SuccessScheme:
+    query = delete(CatImageModel).filter(CatImageModel.id == image_id)
+    await session.execute(query)
+    await session.commit()
+    return SuccessScheme()
+
