@@ -19,6 +19,11 @@ services:
       MINIO_ROOT_PASSWORD: 123456789
       MINIO_ADDRESS: ":9000"
       MINIO_CONSOLE_ADDRESS: ":9001"
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "mc alias set myminio http://localhost:9000 user 123456789 && mc ls myminio" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   database:
     container_name: database
@@ -56,3 +61,4 @@ services:
 #      - 8000
 #    depends_on:
 #      - database
+#      - minio
