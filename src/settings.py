@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env.example", env_file_encoding="utf-8")
 
     host: str
+    external_host: str
     port: int
 
     postgres_user: str

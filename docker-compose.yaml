@@ -19,6 +19,8 @@ services:
       MINIO_ROOT_PASSWORD: 123456789
       MINIO_ADDRESS: ":9000"
       MINIO_CONSOLE_ADDRESS: ":9001"
+    volumes:
+      - minio_data:/data  # Volume для хранения данных MinIO
     healthcheck:
       test: [ "CMD", "sh", "-c", "mc alias set myminio http://localhost:9000 user 123456789 && mc ls myminio" ]
       interval: 10s
@@ -35,8 +37,8 @@ services:
       POSTGRES_DB: db
     ports:
       - "5432:5432"
-    expose:
-      - 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Volume для хранения данных PostgreSQL
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready" ]
       interval: 10s
@@ -52,13 +54,26 @@ services:
     depends_on:
       - database
 
-#  api:
-#    build: .
-#    restart: unless-stopped
-#    ports:
-#      - "8000:8000"
-#    expose:
-#      - 8000
-#    depends_on:
-#      - database
-#      - minio
+  api:
+    container_name: api
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    expose:
+      - 8000
+    volumes:
+      - ./:/app  # Volume для монтирования кода приложения (для разработки)
+      - api_static:/app/static  # Volume для статических файлов (если нужно)
+    depends_on:
+      - database
+      - minio
+
+# Определение volumes
+volumes:
+  minio_data:
+    driver: local
+  postgres_data:
+    driver: local
+  api_static:
+    driver: local
