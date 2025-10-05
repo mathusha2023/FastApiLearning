@@ -6,7 +6,6 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env.example", env_file_encoding="utf-8")
 
     host: str
-    external_host: str
     port: int
 
     postgres_user: str
@@ -19,6 +18,7 @@ class Settings(BaseSettings):
     s3_access_key: str
     s3_secret_key: str
     s3_bucket: str
+    s3_external_url: str
 
     broker_host: str
     broker_port: int

@@ -27,7 +27,8 @@ class App(FastAPI):
     async def lifespan(_app: FastAPI):
         await AsyncPostgresClient.init_postgres(settings.postgres_url)
         await S3Service.init_s3(bucket_name=settings.s3_bucket, endpoint_url=settings.s3_url,
-                                access_key=settings.s3_access_key, secret_key=settings.s3_secret_key)
+                                access_key=settings.s3_access_key, secret_key=settings.s3_secret_key,
+                                external_url=settings.s3_external_url)
         await broker_service.connect()
         logging.info("All resources have been successfully initialized")
 

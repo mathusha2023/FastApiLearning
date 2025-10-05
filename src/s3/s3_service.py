@@ -20,6 +20,7 @@ class S3Service:
             cls,
             bucket_name: str,
             endpoint_url: str,
+            external_url: str,
             access_key: str,
             secret_key: str,
     ) -> None:
@@ -27,7 +28,7 @@ class S3Service:
         if cls.session is not None:
             print("S3 is already initialized")
             return
-        cls.endpoint_url = endpoint_url
+        cls.external_url = external_url
         cls.config = {
             "aws_access_key_id": access_key,
             "aws_secret_access_key": secret_key,
@@ -57,7 +58,7 @@ class S3Service:
         async with cls.get_client() as client:
             client: S3Client
             await client.put_object(Bucket=cls.bucket_name, Key=object_name, Body=content)
-            return f"{cls.endpoint_url}/{cls.bucket_name}/{object_name}"
+            return f"{cls.external_url}/{cls.bucket_name}/{object_name}"
 
     @classmethod
     async def get_file_object(cls, object_name) -> Optional[bytes]:
