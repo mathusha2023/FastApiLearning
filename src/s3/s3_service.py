@@ -41,7 +41,7 @@ class S3Service:
     @classmethod
     async def close_s3(cls) -> None:
         if cls.session is None:
-            print("S3 is already closed")
+            logging.warning("S3 is already closed")
             return
         cls.bucket_name = None
         cls.config = None
