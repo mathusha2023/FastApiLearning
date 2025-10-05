@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession, AsyncEngine
 from src.database.base import Base
@@ -10,7 +11,7 @@ class AsyncPostgresClient:
     @classmethod
     async def init_postgres(cls, db_url: str) -> None:
         if cls._async_session_maker is not None:
-            print("Postgres is already initialized")
+            logging.info("Postgres is already initialized")
             return
 
         cls._engine = create_async_engine(db_url, max_overflow=1100, pool_size=1000, echo=True)
@@ -19,12 +20,12 @@ class AsyncPostgresClient:
         async with cls._engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
-        print("Postgres initialized")
+        logging.info("Postgres initialized")
 
     @classmethod
     async def close_postgres(cls) -> None:
         if cls._engine is not None:
-            print("Postgres closed")
+            logging.info("Postgres closed")
             await cls._engine.dispose()
             cls._engine = None
             cls._async_session_maker = None

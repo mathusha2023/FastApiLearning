@@ -4,7 +4,7 @@ from fastapi import APIRouter, Path, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from src.api.dependencies import SessionDepend
+from src.api.dependencies import SessionDepend, BrokerDepend
 from src.api.responsies import response404
 from src.models import CatModel
 from src.schemes import CatScheme, CatFullScheme, CatAddScheme, CatPatchScheme, SuccessScheme
@@ -35,10 +35,11 @@ async def get_cat(cat_id: Annotated[int, Path(ge=1)], session: SessionDepend) ->
 
 
 @router.post("", summary="Добавить кота")
-async def add_cat(cat: CatAddScheme, session: SessionDepend) -> SuccessScheme:
+async def add_cat(cat: CatAddScheme, session: SessionDepend, broker: BrokerDepend) -> SuccessScheme:
     db_cat = CatModel(name=cat.name, birthday=cat.birthday, color=cat.color)
     session.add(db_cat)
     await session.commit()
+    await broker.publish_message({"message": "Кот добавлен", "cat_id": db_cat.id})
     return SuccessScheme()
 
 

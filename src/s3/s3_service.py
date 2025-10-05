@@ -1,9 +1,12 @@
+import logging
 from contextlib import asynccontextmanager
 from typing import Optional
 
 from botocore.exceptions import ClientError
 from types_aiobotocore_s3.client import S3Client
 from aiobotocore.session import get_session, AioSession
+
+from src.settings import settings
 
 
 class S3Service:
@@ -24,7 +27,7 @@ class S3Service:
         if cls.session is not None:
             print("S3 is already initialized")
             return
-
+        cls.endpoint_url = endpoint_url
         cls.config = {
             "aws_access_key_id": access_key,
             "aws_secret_access_key": secret_key,
@@ -32,7 +35,7 @@ class S3Service:
         }
         cls.bucket_name = bucket_name
         cls.session = get_session()
-        print("S3 initialized")
+        logging.info("S3 initialized")
 
     @classmethod
     async def close_s3(cls) -> None:
@@ -50,10 +53,11 @@ class S3Service:
             yield client
 
     @classmethod
-    async def upload_file_object(cls, object_name, content) -> None:
+    async def upload_file_object(cls, object_name, content) -> str:
         async with cls.get_client() as client:
             client: S3Client
             await client.put_object(Bucket=cls.bucket_name, Key=object_name, Body=content)
+            return f"{cls.endpoint_url}/{cls.bucket_name}/{object_name}"
 
     @classmethod
     async def get_file_object(cls, object_name) -> Optional[bytes]:
@@ -64,7 +68,7 @@ class S3Service:
                 resp = await client.get_object(Bucket=cls.bucket_name, Key=object_name)
             except ClientError as e:
                 if e.response["Error"]["Code"] == "NoSuchKey":
-                    print("No object found")
+                    logging.info("No object found")
                     return
                 else:
                     raise

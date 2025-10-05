@@ -20,6 +20,12 @@ class Settings(BaseSettings):
     s3_secret_key: str
     s3_bucket: str
 
+    broker_host: str
+    broker_port: int
+    broker_user: str
+    broker_password: str
+    broker_queue: str
+
     @property
     def postgres_url(self) -> str:
         return (
@@ -27,6 +33,14 @@ class Settings(BaseSettings):
             f"//{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}"
             f"/{self.postgres_database}"
+        )
+
+    @property
+    def broker_url(self) -> str:
+        return (
+            f"amqp://"
+            f"{self.broker_user}:{self.broker_password}"
+            f"@{self.broker_host}:{self.broker_port}"
         )
 
 

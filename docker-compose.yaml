@@ -20,12 +20,30 @@ services:
       MINIO_ADDRESS: ":9000"
       MINIO_CONSOLE_ADDRESS: ":9001"
     volumes:
-      - minio_data:/data  # Volume для хранения данных MinIO
+      - minio_data:/data
     healthcheck:
       test: [ "CMD", "sh", "-c", "mc alias set myminio http://localhost:9000 user 123456789 && mc ls myminio" ]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - backend
+
+  minio-setup:
+    container_name: minio-setup
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+      mc alias set myminio http://minio:9000 user 123456789 &&
+      mc mb myminio/bucket --ignore-existing &&
+      mc anonymous set download myminio/bucket &&
+      echo 'MinIO setup completed'
+      "
+    networks:
+      - backend
 
   database:
     container_name: database
@@ -38,12 +56,14 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data  # Volume для хранения данных PostgreSQL
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready" ]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - backend
 
   adminer:
     container_name: adminer
@@ -53,6 +73,26 @@ services:
       - "8081:8080"
     depends_on:
       - database
+    networks:
+      - backend
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"   # AMQP protocol port
+      - "15672:15672" # Management UI port
+    expose:
+      - 5672
+      - 15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - backend
 
   api:
     container_name: api
@@ -62,18 +102,20 @@ services:
       - "8000:8000"
     expose:
       - 8000
-    volumes:
-      - ./:/app  # Volume для монтирования кода приложения (для разработки)
-      - api_static:/app/static  # Volume для статических файлов (если нужно)
     depends_on:
       - database
       - minio
+      - rabbitmq
+    networks:
+      - backend
 
-# Определение volumes
 volumes:
   minio_data:
     driver: local
   postgres_data:
     driver: local
-  api_static:
+  rabbitmq_data:
     driver: local
+
+networks:
+  backend:
