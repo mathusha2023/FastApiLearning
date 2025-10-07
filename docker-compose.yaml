@@ -5,6 +5,7 @@ services:
   minio:
     container_name: minio
     image: minio/minio
+    restart: unless-stopped
     entrypoint: sh
     command: >
       -c 'mkdir -p /data/bucket
@@ -79,6 +80,7 @@ services:
   rabbitmq:
     image: rabbitmq:3.12-management-alpine
     container_name: rabbitmq
+    restart: unless-stopped
     hostname: rabbitmq
     ports:
       - "5672:5672"   # AMQP protocol port
